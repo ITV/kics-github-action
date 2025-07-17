@@ -1,4 +1,3 @@
-# action.yml
 name: "KICS Github Action"
 description: "Run KICS scan against IaC projects"
 inputs:
@@ -26,6 +25,10 @@ inputs:
     required: false
     default: "description_id,similarity_id,search_line,search_value"
     description: "Excluded columns for the comment with queries, accepts a comma separated list"
+  dockerhub_registry:
+    description: "Override the Docker Hub registry (default: docker.io)"
+    required: false
+    default: "docker.io"
   path:
     description: "paths to a file or directories to scan, accepts a comma separated list"
     required: true
@@ -120,6 +123,7 @@ runs:
     INPUT_EXCLUDED_COLUMNS_FOR_COMMENTS_WITH_QUERIES: ${{ inputs.excluded_column_for_comments_with_queries }}
     INPUT_OUTPUT_FORMATS: ${{ inputs.output_formats }}
     WORKSPACE_PATH: $GITHUB_WORKSPACE
+    DOCKERHUB_REGISTRY: ${{ inputs.dockerhub_registry }}
   args:
     - ${{ inputs.path }}
     - ${{ inputs.fail_on }}
