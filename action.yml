@@ -123,7 +123,8 @@ runs:
     INPUT_EXCLUDED_COLUMNS_FOR_COMMENTS_WITH_QUERIES: ${{ inputs.excluded_column_for_comments_with_queries }}
     INPUT_OUTPUT_FORMATS: ${{ inputs.output_formats }}
     WORKSPACE_PATH: $GITHUB_WORKSPACE
-    DOCKERHUB_REGISTRY: ${{ inputs.dockerhub_registry }}
+  build-args:
+    - DOCKERHUB_REGISTRY=${{ inputs.dockerhub_registry }}
   args:
     - ${{ inputs.path }}
     - ${{ inputs.fail_on }}
