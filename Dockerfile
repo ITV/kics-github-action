@@ -1,5 +1,6 @@
-ARG DOCKERHUB_REGISTRY=docker.io
-FROM ${DOCKERHUB_REGISTRY}/checkmarx/kics:v2.1.11 as kics-env
+ARG DOCKERHUB_REGISTRY
+
+FROM ${DOCKERHUB_REGISTRY}:v2.1.11 as kics-env
 
 FROM cgr.dev/chainguard/wolfi-base:latest
 
