@@ -107,6 +107,7 @@ inputs:
   dockerhub_registry:
     description: "The Docker registry for the KICS base image. Overridden for private registries."
     required: false
+    default: 'docker.io'
 branding:
   icon: "shield"
   color: "green"
