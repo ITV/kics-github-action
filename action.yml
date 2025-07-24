@@ -1,3 +1,4 @@
+# action.yml
 name: "KICS Github Action"
 description: "Run KICS scan against IaC projects"
 inputs:
@@ -7,18 +8,23 @@ inputs:
     default: ${{github.token}}
   enable_annotations:
     required: false
+    default: "true"
     description: "Enable annotations report"
   enable_comments:
     required: false
+    default: "false"
     description: "Enable pull request report comments"
   enable_jobs_summary:
     required: false
+    default: "false"
     description: "Enable report as jobs summary"
   comments_with_queries:
     required: false
+    default: "false"
     description: "Add queries in th pull request report comments (available when enable_comments = true)"
   excluded_column_for_comments_with_queries:
     required: false
+    default: "description_id,similarity_id,search_line,search_value"
     description: "Excluded columns for the comment with queries, accepts a comma separated list"
   path:
     description: "paths to a file or directories to scan, accepts a comma separated list"
