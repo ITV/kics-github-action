@@ -104,45 +104,58 @@ inputs:
   cloud_provider:
     description: "list of cloud providers to scan (alicloud, aws, azure, gcp)"
     required: false
+  dockerhub_registry:
+    description: "The Docker registry for the KICS base image. Overridden for private registries."
+    required: false
+    default: 'docker.io'
 branding:
   icon: "shield"
   color: "green"
 runs:
-  using: "docker"
-  image: Dockerfile
-  env:
-    INPUT_TOKEN: ${{ inputs.token }}
-    INPUT_OUTPUT_PATH: ${{ inputs.output_path }}
-    INPUT_ENABLE_ANNOTATIONS: ${{ inputs.enable_annotations }}
-    INPUT_ENABLE_COMMENTS: ${{ inputs.enable_comments }}
-    INPUT_ENABLE_JOBS_SUMMARY: ${{ inputs.enable_jobs_summary }}
-    INPUT_COMMENTS_WITH_QUERIES: ${{ inputs.comments_with_queries }}
-    INPUT_EXCLUDED_COLUMNS_FOR_COMMENTS_WITH_QUERIES: ${{ inputs.excluded_column_for_comments_with_queries }}
-    INPUT_OUTPUT_FORMATS: ${{ inputs.output_formats }}
-    WORKSPACE_PATH: $GITHUB_WORKSPACE
-  args:
-    - ${{ inputs.path }}
-    - ${{ inputs.fail_on }}
-    - ${{ inputs.timeout }}
-    - ${{ inputs.profiling }}
-    - ${{ inputs.config }}
-    - ${{ inputs.platform_type }}
-    - ${{ inputs.exclude_paths }}
-    - ${{ inputs.exclude_queries }}
-    - ${{ inputs.include_queries }}
-    - ${{ inputs.exclude_categories }}
-    - ${{ inputs.exclude_results }}
-    - ${{ inputs.exclude_severities }}
-    - ${{ inputs.exclude_gitignore}}
-    - ${{ inputs.output_formats }}
-    - ${{ inputs.output_path }}
-    - ${{ inputs.payload_path }}
-    - ${{ inputs.queries }}
-    - ${{ inputs.verbose }}
-    - ${{ inputs.bom }}
-    - ${{ inputs.ignore_on_exit }}
-    - ${{ inputs.disable_secrets }}
-    - ${{ inputs.disable_full_descriptions }}
-    - ${{ inputs.libraries_path }}
-    - ${{ inputs.secrets_regexes_path}}
-    - ${{ inputs.cloud_provider}}
+  using: "composite"
+  steps:
+    - name: Build KICS Action Image
+      shell: bash
+      run: docker build --build-arg DOCKERHUB_REGISTRY=${{ inputs.dockerhub_registry }} -t kics-action:latest "${{ github.action_path }}"
+
+    - name: Run KICS Scan
+      shell: bash
+      run: |
+        docker run --name kics-scan \
+        -v "${{ github.workspace }}":"${{ github.workspace }}" \
+        -w "${{ github.workspace }}" \
+        -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+        -e GITHUB_EVENT_PATH="${{ github.event_path }}" \
+        -e INPUT_TOKEN="${{ inputs.token }}" \
+        -e INPUT_ENABLE_ANNOTATIONS="${{ inputs.enable_annotations }}" \
+        -e INPUT_ENABLE_COMMENTS="${{ inputs.enable_comments }}" \
+        -e INPUT_ENABLE_JOBS_SUMMARY="${{ inputs.enable_jobs_summary }}" \
+        -e INPUT_COMMENTS_WITH_QUERIES="${{ inputs.comments_with_queries }}" \
+        -e INPUT_EXCLUDED_COLUMNS_FOR_COMMENTS_WITH_QUERIES="${{ inputs.excluded_column_for_comments_with_queries }}" \
+        -e INPUT_PATH="${{ inputs.path }}" \
+        -e INPUT_IGNORE_ON_EXIT="${{ inputs.ignore_on_exit }}" \
+        -e INPUT_FAIL_ON="${{ inputs.fail_on }}" \
+        -e INPUT_TIMEOUT="${{ inputs.timeout }}" \
+        -e INPUT_PROFILING="${{ inputs.profiling }}" \
+        -e INPUT_CONFIG_PATH="${{ inputs.config_path }}" \
+        -e INPUT_PLATFORM_TYPE="${{ inputs.platform_type }}" \
+        -e INPUT_EXCLUDE_PATHS="${{ inputs.exclude_paths }}" \
+        -e INPUT_EXCLUDE_QUERIES="${{ inputs.exclude_queries }}" \
+        -e INPUT_EXCLUDE_CATEGORIES="${{ inputs.exclude_categories }}" \
+        -e INPUT_EXCLUDE_RESULTS="${{ inputs.exclude_results }}" \
+        -e INPUT_EXCLUDE_SEVERITIES="${{ inputs.exclude_severities }}" \
+        -e INPUT_EXCLUDE_GITIGNORE="${{ inputs.exclude_gitignore }}" \
+        -e INPUT_OUTPUT_FORMATS="${{ inputs.output_formats }}" \
+        -e INPUT_OUTPUT_PATH="${{ inputs.output_path }}" \
+        -e INPUT_PAYLOAD_PATH="${{ inputs.payload_path }}" \
+        -e INPUT_QUERIES="${{ inputs.queries }}" \
+        -e INPUT_SECRETS_REGEXES_PATH="${{ inputs.secrets_regexes_path }}" \
+        -e INPUT_LIBRARIES_PATH="${{ inputs.libraries_path }}" \
+        -e INPUT_DISABLE_FULL_DESCRIPTIONS="${{ inputs.disable_full_descriptions }}" \
+        -e INPUT_DISABLE_SECRETS="${{ inputs.disable_secrets }}" \
+        -e INPUT_TYPE="${{ inputs.type }}" \
+        -e INPUT_VERBOSE="${{ inputs.verbose }}" \
+        -e INPUT_INCLUDE_QUERIES="${{ inputs.include_queries }}" \
+        -e INPUT_BOM="${{ inputs.bom }}" \
+        -e INPUT_CLOUD_PROVIDER="${{ inputs.cloud_provider }}" \
+        kics-action:latest
