@@ -107,7 +107,7 @@ inputs:
   dockerhub_registry:
     description: "The Docker registry for the KICS base image. Overridden for private registries."
     required: false
-    default: 'docker.io'
+    default: "docker.io"
 branding:
   icon: "shield"
   color: "green"
@@ -116,7 +116,7 @@ runs:
   steps:
     - name: Build KICS Action Image
       shell: bash
-      run: docker build --build-arg DOCKERHUB_REGISTRY=${{ inputs.dockerhub_registry }} -t kics-action:latest "${{ github.action_path }}"
+      run: docker build --build-arg DOCKERHUB_REGISTRY="${{ inputs.dockerhub_registry }}" -t kics-action:latest "${{ github.action_path }}"
 
     - name: Run KICS Scan
       shell: bash
