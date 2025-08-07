@@ -177,5 +177,4 @@ runs:
         -e INPUT_INCLUDE_QUERIES="${{ inputs.include_queries }}" \
         -e INPUT_BOM="${{ inputs.bom }}" \
         -e INPUT_CLOUD_PROVIDER="${{ inputs.cloud_provider }}" \
-        -e AWS_REGION="${{ secrets.AWS_REGION }}" \
         kics-action:latest
