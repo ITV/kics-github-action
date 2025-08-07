@@ -150,7 +150,7 @@ runs:
         -e INPUT_ENABLE_COMMENTS="${{ inputs.enable_comments }}" \
         -e INPUT_ENABLE_JOBS_SUMMARY="${{ inputs.enable_jobs_summary }}" \
         -e INPUT_COMMENTS_WITH_QUERIES="${{ inputs.comments_with_queries }}" \
-        -e INPUT_EXCLUDED_COLUMN_FOR_COMMENTS_WITH_QUERIES="${{ inputs.excluded_column_for_comments_with_queries }}" \
+        -e INPUT_EXCLUDED_COLUMNS_FOR_COMMENTS_WITH_QUERIES="${{ inputs.excluded_column_for_comments_with_queries }}" \
         -e INPUT_PATH="${{ inputs.path }}" \
         -e INPUT_IGNORE_ON_EXIT="${{ inputs.ignore_on_exit }}" \
         -e INPUT_FAIL_ON="${{ inputs.fail_on }}" \
