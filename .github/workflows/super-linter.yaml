@@ -39,7 +39,7 @@ jobs:
         uses: super-linter/super-linter/slim@12150456a73e248bdc94d0794898f94e23127c88 # v7.4.0
         env:
           VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: "main"
+          DEFAULT_BRANCH: "master"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # tflint runs in its own job which excludes folders where necessary
           VALIDATE_TERRAFORM_TFLINT: false
