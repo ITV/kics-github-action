@@ -41,7 +41,7 @@ jobs:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # tflint runs in its own job which excludes folders where neccessary
+          # tflint runs in its own job which excludes folders where necessary
           VALIDATE_TERRAFORM_TFLINT: false
           # checkov is used in favour of terrascan
           VALIDATE_TERRAFORM_TERRASCAN: false
