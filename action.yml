@@ -124,8 +124,27 @@ runs:
         docker run --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
         -w "${{ github.workspace }}" \
-        -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+        -e GITHUB_ACTION \
+        -e GITHUB_ACTOR \
+        -e GITHUB_API_URL \
+        -e GITHUB_BASE_REF \
+        -e GITHUB_EVENT_NAME \
         -e GITHUB_EVENT_PATH="${{ github.event_path }}" \
+        -e GITHUB_GRAPHQL_URL \
+        -e GITHUB_HEAD_REF \
+        -e GITHUB_JOB \
+        -e GITHUB_REF \
+        -e GITHUB_REPOSITORY \
+        -e GITHUB_RUN_ID \
+        -e GITHUB_RUN_NUMBER \
+        -e GITHUB_SERVER_URL \
+        -e GITHUB_SHA \
+        -e GITHUB_TOKEN="${{ inputs.token }}" \
+        -e GITHUB_WORKFLOW \
+        -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+        -e RUNNER_OS \
+        -e RUNNER_TEMP \
+        -e RUNNER_TOOL_CACHE \
         -e INPUT_TOKEN="${{ inputs.token }}" \
         -e INPUT_ENABLE_ANNOTATIONS="${{ inputs.enable_annotations }}" \
         -e INPUT_ENABLE_COMMENTS="${{ inputs.enable_comments }}" \
