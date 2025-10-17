@@ -120,7 +120,7 @@ runs:
         if [[ "${{ inputs.use-ecr-registry }}" == "true" ]]; then
           IMAGE="655028521085.dkr.ecr.eu-west-1.amazonaws.com/cp-gha-kics:0.0.1"
         else
-          IMAGE="ghcr.io/itv/kics-github-action:latest"
+          IMAGE="ghcr.io/itv/kics-github-action:develop"
         fi
 
         docker run --quiet --name kics-scan \
