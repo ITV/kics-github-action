@@ -123,7 +123,7 @@ runs:
           IMAGE="ghcr.io/itv/kics-github-action:latest"
         fi
 
-        docker run --name kics-scan \
+        docker run --quiet --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
         -w "${{ github.workspace }}" \
         -e GITHUB_ACTION \
