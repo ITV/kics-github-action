@@ -104,6 +104,10 @@ inputs:
   cloud_provider:
     description: "list of cloud providers to scan (alicloud, aws, azure, gcp)"
     required: false
+  use-ecr-registry:
+    description: "Whether to use AWS ECR as the container registry"
+    required: false
+    default: "false"
 branding:
   icon: "shield"
   color: "green"
@@ -113,6 +117,12 @@ runs:
     - name: Run KICS Scan
       shell: bash
       run: |
+        if [[ "${{ inputs.use-ecr-registry }}" == "true" ]]; then
+          IMAGE="655028521085.dkr.ecr.eu-west-1.amazonaws.com/cp-gha-kics:0.0.1"
+        else
+          IMAGE="ghcr.io/itv/kics-github-action:latest"
+        fi
+
         docker run --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
         -w "${{ github.workspace }}" \
@@ -169,4 +179,4 @@ runs:
         -e INPUT_INCLUDE_QUERIES="${{ inputs.include_queries }}" \
         -e INPUT_BOM="${{ inputs.bom }}" \
         -e INPUT_CLOUD_PROVIDER="${{ inputs.cloud_provider }}" \
-        ghcr.io/itv/kics-github-action:latest
+        $IMAGE
