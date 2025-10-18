@@ -1,4 +1,5 @@
 {
+  "repositoryUrl": "https://github.com/ITV/kics-github-action.git",
   "branches": [
     "main",
     "master"
@@ -9,7 +10,8 @@
     [
       "@semantic-release/github",
       {
-        "assets": []
+        "assets": [],
+        "releasedLabels": false
       }
     ]
   ]

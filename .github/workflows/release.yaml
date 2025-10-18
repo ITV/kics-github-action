@@ -20,7 +20,7 @@ on:
 
 jobs:
   release:
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && github.repository == 'ITV/kics-github-action' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,6 +33,16 @@ jobs:
       released: ${{ steps.semantic.outputs.new_release_published }}
 
     steps:
+      - name: Verify repository
+        run: |
+          echo "Running release for repository: ${{ github.repository }}"
+          if [[ "${{ github.repository }}" != "ITV/kics-github-action" ]]; then
+            echo "❌ Error: This release workflow should only run on ITV/kics-github-action"
+            echo "Current repository: ${{ github.repository }}"
+            exit 1
+          fi
+          echo "✅ Repository verification passed"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -80,8 +90,9 @@ jobs:
             echo "new_release_version=$NEW_VERSION" >> $GITHUB_OUTPUT
             echo "new_release_published=true" >> $GITHUB_OUTPUT
 
-            # Create the release
+            # Create the release in ITV/kics-github-action repository
             gh release create "v$NEW_VERSION" \
+              --repo "ITV/kics-github-action" \
               --title "Release v$NEW_VERSION" \
               --notes "Manual release: ${{ github.event.inputs.version_type }} version bump" \
               --target main
