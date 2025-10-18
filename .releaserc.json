@@ -1,0 +1,22 @@
+{
+  "repositoryUrl": "https://github.com/ITV/kics-github-action.git",
+  "branches": [
+    "main",
+    "master"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [],
+        "releasedLabels": false,
+        "addReleases": "bottom",
+        "failComment": false,
+        "failTitle": false,
+        "successComment": false
+      }
+    ]
+  ]
+}
