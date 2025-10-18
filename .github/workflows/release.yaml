@@ -103,6 +103,12 @@ jobs:
             # Try semantic-release, but handle PR-related failures gracefully
             if npx semantic-release --debug; then
               echo "✅ Semantic release completed successfully"
+              
+              # Get the version that was created
+              LATEST_TAG=$(gh release list --limit 1 | head -n 1 | awk '{print $1}')
+              echo "🔍 Debug: Latest release tag from semantic-release: $LATEST_TAG"
+              echo "new_release_version=${LATEST_TAG#v}" >> $GITHUB_OUTPUT
+              echo "new_release_published=true" >> $GITHUB_OUTPUT
             else
               SEMANTIC_EXIT_CODE=$?
               echo "⚠️  Semantic release failed with exit code: $SEMANTIC_EXIT_CODE"
@@ -111,6 +117,7 @@ jobs:
               if gh release list --limit 1 | head -n 1 | grep -q "v"; then
                 LATEST_TAG=$(gh release list --limit 1 | head -n 1 | awk '{print $1}')
                 echo "✅ Release $LATEST_TAG was created despite semantic-release error"
+                echo "🔍 Debug: Latest release tag from fallback: $LATEST_TAG"
                 echo "new_release_version=${LATEST_TAG#v}" >> $GITHUB_OUTPUT
                 echo "new_release_published=true" >> $GITHUB_OUTPUT
               else
@@ -148,10 +155,19 @@ jobs:
         id: version
         run: |
           VERSION="${{ needs.release.outputs.version }}"
+          echo "🔍 Debug: Received version from release job: '$VERSION'"
+          
+          if [ -z "$VERSION" ]; then
+            echo "❌ Error: Version is empty!"
+            exit 1
+          fi
+          
           echo "full=$VERSION" >> $GITHUB_OUTPUT
 
           # Extract major, minor, patch
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "🔍 Debug: Version components - MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
+          
           echo "major=$MAJOR" >> $GITHUB_OUTPUT
           echo "minor=$MINOR" >> $GITHUB_OUTPUT
           echo "patch=$PATCH" >> $GITHUB_OUTPUT
@@ -160,6 +176,8 @@ jobs:
           echo "major_tag=v$MAJOR" >> $GITHUB_OUTPUT
           echo "minor_tag=v$MAJOR.$MINOR" >> $GITHUB_OUTPUT
           echo "patch_tag=v$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+          
+          echo "🔍 Debug: Generated tags - major_tag=v$MAJOR, minor_tag=v$MAJOR.$MINOR, patch_tag=v$MAJOR.$MINOR.$PATCH"
 
       - name: Generate Docker metadata
         id: meta
@@ -209,16 +227,34 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update major version tag
+      - name: Update mutable Git tags
         run: |
           VERSION="${{ needs.release.outputs.version }}"
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-
-          # Update or create the major version tag
+          echo "Creating mutable tags for version: $VERSION"
+          
+          # Extract version components
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "Version components: MAJOR=$MAJOR, MINOR=$MINOR, PATCH=$PATCH"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Create and push major version tag (v1, v2, etc.)
+          echo "Creating major version tag: v$MAJOR"
           git tag -f "v$MAJOR"
           git push origin "v$MAJOR" --force
-
-          echo "Updated mutable tag v$MAJOR to point to v$VERSION"
+          echo "✅ Updated mutable tag v$MAJOR to point to v$VERSION"
+          
+          # Create and push minor version tag (v1.2, v1.3, etc.)
+          echo "Creating minor version tag: v$MAJOR.$MINOR"
+          git tag -f "v$MAJOR.$MINOR"
+          git push origin "v$MAJOR.$MINOR" --force
+          echo "✅ Updated mutable tag v$MAJOR.$MINOR to point to v$VERSION"
+          
+          # List all tags to verify
+          echo "Current tags:"
+          git tag --sort=-version:refname | head -10
 
       - name: Create release summary
         run: |
