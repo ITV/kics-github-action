@@ -122,7 +122,7 @@ runs:
         else
           IMAGE="ghcr.io/itv/kics-github-action:develop"
         fi
-
+        echo "Using image: $IMAGE"
         docker run --quiet --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
         -w "${{ github.workspace }}" \
