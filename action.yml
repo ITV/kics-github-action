@@ -118,7 +118,7 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.use-ecr-registry }}" == "true" ]]; then
-          IMAGE="655028521085.dkr.ecr.eu-west-1.amazonaws.com/cp-gha-kics:0.0.1"
+          IMAGE="655028521085.dkr.ecr.eu-west-1.amazonaws.com/cp-gha-kics:0.0.2"
         else
           IMAGE="ghcr.io/itv/kics-github-action:develop"
         fi
