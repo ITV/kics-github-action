@@ -32,12 +32,12 @@ jobs:
           tags: |
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
-            # use branch name for branch builds
+            # use branch name for branch builds (push events)
             type=ref,event=branch
             # use pr number for pull requests
             type=ref,event=pr
-            # use short sha for any push
-            type=sha,prefix={{branch}}-
+            # use short sha with safe prefix for all events
+            type=sha,prefix=sha-
 
       - name: Login to GHCR
         uses: docker/login-action@v3
