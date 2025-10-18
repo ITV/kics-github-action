@@ -1,0 +1,219 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type of version bump'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+      issues: write
+
+    outputs:
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      released: ${{ steps.semantic.outputs.new_release_published }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release dependencies
+        run: |
+          npm install -g semantic-release
+          npm install -g @semantic-release/git
+          npm install -g @semantic-release/github
+
+      - name: Run semantic-release
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.version_type }}" != "auto" ]]; then
+            # Manual release with specified version type
+            echo "Manual release triggered with version type: ${{ github.event.inputs.version_type }}"
+            npx semantic-release --dry-run > release_output.txt 2>&1 || true
+
+            # Extract current version and calculate next version
+            CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            CURRENT_VERSION=${CURRENT_VERSION#v}
+
+            case "${{ github.event.inputs.version_type }}" in
+              "patch")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
+                ;;
+              "minor")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.%d.0", $1, $2+1}')
+                ;;
+              "major")
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{printf "%d.0.0", $1+1}')
+                ;;
+            esac
+
+            echo "new_release_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "new_release_published=true" >> $GITHUB_OUTPUT
+
+            # Create the release
+            gh release create "v$NEW_VERSION" \
+              --title "Release v$NEW_VERSION" \
+              --notes "Manual release: ${{ github.event.inputs.version_type }} version bump" \
+              --target main
+          else
+            # Automatic semantic release
+            npx semantic-release --debug
+          fi
+
+  build-and-tag:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version components
+        id: version
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          echo "full=$VERSION" >> $GITHUB_OUTPUT
+
+          # Extract major, minor, patch
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "patch=$PATCH" >> $GITHUB_OUTPUT
+
+          # Create version tags
+          echo "major_tag=v$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor_tag=v$MAJOR.$MINOR" >> $GITHUB_OUTPUT
+          echo "patch_tag=v$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/itv/kics-github-action
+          tags: |
+            # Latest tag
+            type=raw,value=latest
+            # Full semantic version
+            type=raw,value=${{ steps.version.outputs.patch_tag }}
+            # Mutable major version tag (v1, v2, etc.)
+            type=raw,value=${{ steps.version.outputs.major_tag }}
+            # Mutable minor version tag (v1.2, v1.3, etc.)
+            type=raw,value=${{ steps.version.outputs.minor_tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Update mutable tags
+        run: |
+          echo "Successfully built and pushed:"
+          echo "- ghcr.io/itv/kics-github-action:latest"
+          echo "- ghcr.io/itv/kics-github-action:${{ steps.version.outputs.patch_tag }}"
+          echo "- ghcr.io/itv/kics-github-action:${{ steps.version.outputs.major_tag }} (mutable)"
+          echo "- ghcr.io/itv/kics-github-action:${{ steps.version.outputs.minor_tag }} (mutable)"
+
+  update-action-refs:
+    needs: [release, build-and-tag]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update major version tag
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+
+          # Update or create the major version tag
+          git tag -f "v$MAJOR"
+          git push origin "v$MAJOR" --force
+
+          echo "Updated mutable tag v$MAJOR to point to v$VERSION"
+
+      - name: Create release summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## 🚀 Release Summary
+
+          **Version:** `v${{ needs.release.outputs.version }}`
+
+          ### 🏷️ Tags Created:
+          - `v${{ needs.release.outputs.version }}` - Immutable release tag
+          - `v$(echo ${{ needs.release.outputs.version }} | cut -d. -f1)` - Mutable major version tag
+          - `v$(echo ${{ needs.release.outputs.version }} | cut -d. -f1-2)` - Mutable minor version tag
+
+          ### 🐳 Docker Images:
+          - `ghcr.io/itv/kics-github-action:latest`
+          - `ghcr.io/itv/kics-github-action:v${{ needs.release.outputs.version }}`
+          - `ghcr.io/itv/kics-github-action:v$(echo ${{ needs.release.outputs.version }} | cut -d. -f1)`
+          - `ghcr.io/itv/kics-github-action:v$(echo ${{ needs.release.outputs.version }} | cut -d. -f1-2)`
+
+          ### 📖 Usage:
+          ```yaml
+          # Use specific version (recommended for production)
+          uses: ITV/kics-github-action@v${{ needs.release.outputs.version }}
+
+          # Use major version (gets latest compatible updates)
+          uses: ITV/kics-github-action@v$(echo ${{ needs.release.outputs.version }} | cut -d. -f1)
+          ```
+          EOF
