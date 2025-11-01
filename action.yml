@@ -123,10 +123,13 @@ runs:
           IMAGE="ghcr.io/itv/kics-github-action:develop"
         fi
         echo "Using image: $IMAGE"
+
+        TEMP_DIR="${{ runner.temp }}"
         docker run --quiet --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
-        -v "${{ runner.temp }}":"${{ runner.temp }}" \
+        -v "${TEMP_DIR}":"${TEMP_DIR}" \
         -w "${{ github.workspace }}" \
+        -e RUNNER_TEMP="${TEMP_DIR}" \
         -e GITHUB_ACTION \
         -e GITHUB_ACTOR \
         -e GITHUB_API_URL \
@@ -146,7 +149,6 @@ runs:
         -e GITHUB_WORKFLOW \
         -e GITHUB_WORKSPACE="${{ github.workspace }}" \
         -e RUNNER_OS \
-        -e RUNNER_TEMP \
         -e RUNNER_TOOL_CACHE \
         -e INPUT_TOKEN="${{ inputs.token }}" \
         -e INPUT_ENABLE_ANNOTATIONS="${{ inputs.enable_annotations }}" \
