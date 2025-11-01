@@ -183,3 +183,13 @@ runs:
         -e INPUT_BOM="${{ inputs.bom }}" \
         -e INPUT_CLOUD_PROVIDER="${{ inputs.cloud_provider }}" \
         $IMAGE
+    - name: Debug - Check if file exists after scan
+      if: always()
+      shell: bash
+      run: |
+        echo "Contents of RUNNER_TEMP:"
+        ls -la "${{ runner.temp }}"
+        echo "Contents of results-dir:"
+        ls -la "${{ runner.temp }}/results-dir" || echo "results-dir doesn't exist!"
+        echo "Looking for results.json:"
+        find "${{ runner.temp }}" -name "results.json" -ls || echo "results.json not found anywhere!"
