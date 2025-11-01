@@ -125,6 +125,7 @@ runs:
         echo "Using image: $IMAGE"
         docker run --quiet --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
+        -v "${{ runner.temp }}":"${{ runner.temp }}" \
         -w "${{ github.workspace }}" \
         -e GITHUB_ACTION \
         -e GITHUB_ACTOR \
