@@ -124,12 +124,10 @@ runs:
         fi
         echo "Using image: $IMAGE"
 
-        TEMP_DIR="${{ runner.temp }}"
         docker run --quiet --name kics-scan \
         -v "${{ github.workspace }}":"${{ github.workspace }}" \
-        -v "${TEMP_DIR}":"${TEMP_DIR}" \
+        -v "${{ runner.temp }}/results-dir":"/results-dir" \
         -w "${{ github.workspace }}" \
-        -e RUNNER_TEMP="${TEMP_DIR}" \
         -e GITHUB_ACTION \
         -e GITHUB_ACTOR \
         -e GITHUB_API_URL \
@@ -149,6 +147,7 @@ runs:
         -e GITHUB_WORKFLOW \
         -e GITHUB_WORKSPACE="${{ github.workspace }}" \
         -e RUNNER_OS \
+        -e RUNNER_TEMP \
         -e RUNNER_TOOL_CACHE \
         -e INPUT_TOKEN="${{ inputs.token }}" \
         -e INPUT_ENABLE_ANNOTATIONS="${{ inputs.enable_annotations }}" \
@@ -183,13 +182,3 @@ runs:
         -e INPUT_BOM="${{ inputs.bom }}" \
         -e INPUT_CLOUD_PROVIDER="${{ inputs.cloud_provider }}" \
         $IMAGE
-    - name: Debug - Check if file exists after scan
-      if: always()
-      shell: bash
-      run: |
-        echo "Contents of RUNNER_TEMP:"
-        ls -la "${{ runner.temp }}"
-        echo "Contents of results-dir:"
-        ls -la "${{ runner.temp }}/results-dir" || echo "results-dir doesn't exist!"
-        echo "Looking for results.json:"
-        find "${{ runner.temp }}" -name "results.json" -ls || echo "results.json not found anywhere!"
