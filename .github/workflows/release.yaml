@@ -41,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install semantic-release dependencies
         run: |
@@ -83,7 +83,6 @@ jobs:
               exit $SEMANTIC_EXIT_CODE
             fi
           fi
-
 
   build-and-tag:
     needs: release
