@@ -108,6 +108,10 @@ inputs:
     description: "Whether to use AWS ECR as the container registry"
     required: false
     default: "false"
+  use-artifact-registry:
+    description: "Whether to use Google Artifact Registry as the container registry"
+    required: false
+    default: "false"
 branding:
   icon: "shield"
   color: "green"
@@ -119,6 +123,8 @@ runs:
       run: |
         if [[ "${{ inputs.use-ecr-registry }}" == "true" ]]; then
           IMAGE="655028521085.dkr.ecr.eu-west-1.amazonaws.com/cp-gha-kics:0.0.2"
+        elif [[ "${{ inputs.use-artifact-registry }}" == "true" ]]; then
+          IMAGE="europe-west2-docker.pkg.dev/prj-itv-cloudsec-prod/org-images/gha-kics:0.0.2"
         else
           IMAGE="ghcr.io/itv/kics-github-action:develop"
         fi
