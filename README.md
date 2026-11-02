@@ -7,7 +7,6 @@
 - [KICS GitHub Action](#kics-github-action)
   - [Integrate KICS into your GitHub workflows](#integrate-kics-into-your-github-workflows)
     - [Supported Platforms](#supported-platforms)
-    - [Please find more info in the official website: <a href="https://kics.io">kics.io</a>](#please-find-more-info-in-the-official-website-kicsio)
   - [Inputs](#inputs)
   - [Simple usage example](#simple-usage-example)
   - [Workflow failures](#workflow-failures)
@@ -39,9 +38,9 @@ Pull-request builds validate the image without publishing it.
 
 **KICS** (pronounced as 'kick-s') or **Kicscan** is an open source solution for static code analysis of Infrastructure as Code.
 
-**K**eeping **I**nfrastructure as **C**ode **S**ecure (in short **KICS**) is a must-have for any cloud native project. With KICS, finding security vulnerabilities, compliance issues, and infrastructure misconfigurations happens early in the development cycle, when fixing these is straightforward and cheap.
+**K**eeping **I**nfrastructure as **C**ode **S**ecure (in short **KICS**) is a must have for any cloud native project. With KICS, finding security vulnerabilities, compliance issues, and infrastructure misconfigurations happens early in the development cycle, when fixing these is straightforward and cheap.
 
-It is as simple as running a CLI tool, making it easy to integrate into any project CI.
+It is as simple as running a command-line tool, making it easy to integrate into any project CI.
 
 #### Supported Platforms
 
@@ -86,7 +85,7 @@ In order to run the Databricks and TencentCloud queries, use the `--experimental
 
 Official documentation page <a href="https://docs.kics.io">docs.kics.io</a>
 
-Ensure that you're using the <a href="https://github.com/Checkmarx/kics-github-action/releases">latest KICS Github Action release</a> when creating a workflow.
+Ensure that you're using the <a href="https://github.com/Checkmarx/kics-github-action/releases">latest KICS GitHub Action release</a> when creating a workflow.
 
 ## Inputs
 
@@ -112,15 +111,15 @@ Ensure that you're using the <a href="https://github.com/Checkmarx/kics-github-a
 | exclude_gitignore (available only from KICS version 1.6) |                                                       | disables the exclusion of paths specified within .gitignore file                                                                                            | Boolean | No       | false                                                 |
 | include_queries                                          | a227ec01-f97a-4084-91a4-47b350c1db54                  | include only specified list of queries to the scan, cannot be provided with query exclusion flags                                                           | String  | No       | N/A                                                   |
 | output_formats                                           | 'json,sarif'                                          | formats in which the results report will be exported                                                                                                        | String  | No       | json                                                  |
-| output_path                                              | myResults/                                            | file path to store result in json format                                                                                                                    | String  | No       | "./"                                                  |
+| output_path                                              | myResults/                                            | file path to store result in JSON format                                                                                                                    | String  | No       | "./"                                                  |
 | payload_path                                             | /tmp/mypayload.json                                   | file path to store source internal representation in JSON format                                                                                            | String  | No       | N/A                                                   |
 | queries                                                  |                                                       | path to directory with queries (default "./assets/queries")                                                                                                 | String  | No       | ./assets/queries downloaded with the binaries         |
 | verbose                                                  | true                                                  | verbose scan                                                                                                                                                | Boolean | No       | false                                                 |
 | type                                                     | Ansible,Dockerfile                                    | case insensitive comma-separated list of platform types to scan (Ansible, AzureResourceManager, CloudFormation, Dockerfile, Kubernetes, OpenAPI, Terraform) | String  | No       | all types                                             |
 | bom                                                      | true                                                  | include bill of materials (BoM) in results.json output                                                                                                      | Boolean | No       | false                                                 |
-| disable_full_descriptions                                | false                                                 | disable request for full descriptions and use default vulnerability descriptions                                                                            | Boolean | false    |
-| disable_secrets                                          | false                                                 | disable secrets detection                                                                                                                                   | Boolean | false    |
-| secrets_regexes_path                                     | ./mydir/secrets-config.json                           | path to custom secrets regex rules configuration file                                                                                                       | String  | No       | N/A                                                   |
+| disable_full_descriptions                                | false                                                 | disable request for full descriptions and use default vulnerability descriptions                                                                            | Boolean | false    | N/A                                                   |
+| disable_secrets                                          | false                                                 | disable secrets detection                                                                                                                                   | Boolean | false    | N/A                                                   |
+| secrets_regexes_path                                     | ./mydir/secrets-config.json                           | path to custom secrets regular expression rules configuration file                                                                                          | String  | No       | N/A                                                   |
 | libraries_path                                           | ./myLibsDir                                           | path to directory with Rego libraries                                                                                                                       | String  | No       | N/A                                                   |
 | cloud_provider                                           | aws,azure                                             | list of cloud providers to scan (alicloud, aws, azure, gcp)                                                                                                 | String  | No       | N/A                                                   |
 
@@ -186,7 +185,7 @@ steps:
 
 ## Enabling Pull Request Comment
 
-`GITHUB_TOKEN` enables this github action to access github API and post comments in a pull request:
+`GITHUB_TOKEN` enables this GitHub Action to access GitHub API and post comments in a pull request:
 
 ```yaml
 name: Test KICS action PR comment
@@ -367,12 +366,12 @@ jobs:
 
 We welcome [issues](https://github.com/checkmarx/kics-github-action/issues) to and [pull requests](https://github.com/checkmarx/kics-github-action/pulls) against this repository!
 
-# License
+## License
 
-KICS Github Action
+KICS GitHub Action
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.

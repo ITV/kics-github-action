@@ -9,6 +9,8 @@ on:
   release:
     types: [published]
 
+permissions: {}
+
 jobs:
   release:
     # Numeric owner ID survives the mirror's namespace rewrite.
