@@ -24,6 +24,18 @@
 
 ## Integrate KICS into your GitHub workflows
 
+### Release mirrors
+
+ITV alone creates semantic-release versions. When Syncerator publishes a release
+in the Studios mirror, the release workflow builds that tag's snapshot into the
+mirror's GHCR namespace without creating another release. Source releases build
+images in the same workflow because releases made with `GITHUB_TOKEN` do not
+trigger release-event workflows.
+
+Release images have full-version, major, minor and `latest` tags. In Studios,
+`develop` is also updated as a compatibility alias for the action's existing
+runtime image reference; pinning an action version does not pin that image.
+Pull-request builds validate the image without publishing it.
 
 **KICS** (pronounced as 'kick-s') or **Kicscan** is an open source solution for static code analysis of Infrastructure as Code.
 
@@ -66,6 +78,7 @@ It is as simple as running a CLI tool, making it easy to integrate into any proj
 <img alt="NIFCloud" src="images/logo-nifcloud.png" width="110">&nbsp;&nbsp;&nbsp;
 
 #### Beta Features
+
 <img alt="Databricks" src="images/logo-databricks.png" width="200">&nbsp;&nbsp;&nbsp;
 <img alt="TencentCloud" src="images/logo-tencentcloud.png" width="180">&nbsp;&nbsp;&nbsp;
 
@@ -77,59 +90,58 @@ Ensure that you're using the <a href="https://github.com/Checkmarx/kics-github-a
 
 ## Inputs
 
-| Variable                                  | Example Value &nbsp;                                   | Description &nbsp;                                                                                                                                          | Type    | Required | Default                                                |
-|-------------------------------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|---------| -------- |--------------------------------------------------------|
-| enable_comments                            | true                                                   | Enable pull request report comments                                                                                                                         | Boolean | No       | false                                                  |
-| enable_jobs_summary                       | true                                                   | Enable report as jobs summary                                                                                                                               | Boolean | No       | false                                                  |
-| enable_annotations                        | true                                                   | Enable annotations  report                                                                                                                                  | Boolean | No       | true                                                   |
-| comments_with_queries                     | true                                                   | Add queries in th pull request report comments (available when enable_comments = true)                                                                      | Boolean | No       | false                                                  |
-| excluded_column_for_comments_with_queries | description_id,similarity_id,search_line,search_value  | Excluded columns for the comment with queries, accepts a comma separated list                                                                               | String  | No       | description_id,similarity_id,search_line,search_value  |
-| path                                      | terraform/main.tf,Dockerfile                           | paths to a file or directories to scan, comma separated list                                                                                                | String  | Yes      | N/A                                                    |
-| ignore_on_exit                            | results                                                | defines which non-zero exit codes should be ignored (all, results, errors, none)                                                                            | String  | No       | none                                                   |
-| fail_on                                   | high,medium                                            | comma separated list of which severities returns exit code !=0                                                                                              | String  | No       | high,medium,low,info                                   |
-| timeout                                   | 75                                                     | number of seconds the query has to execute before being canceled                                                                                            | String  | No       | 60                                                     |
-| profiling                                 | CPU                                                    | turns on profiler that prints resource consumption in the logs during the execution (CPU, MEM)                                                              | String  | No       | N/A                                                    |
-| config_path                               | ./kics.config                                          | path to configuration file                                                                                                                                  | String  | No       | N/A                                                    |
-| platform_type                             | terraform,ansible                                      | case insensitive list of platform types to scan                                                                                                             | String  | No       | All platforms                                          |
-| exclude_paths                             | ./shouldNotScan/*,somefile.txt                         | exclude paths from scan, supports glob, comma separated list                                                                                                | String  | No       | N/A                                                    |
-| exclude_queries                           | a227ec01-f97a-4084-91a4-47b350c1db54                   | exclude queries by providing the query ID, comma separated list                                                                                             | String  | No       | N/A                                                    |
-| exclude_categories                        | 'Observability,Networking and Firewall'                | exclude categories by providing its name, comma separated list                                                                                              | String  | No       | N/A                                                    |
-| exclude_results                           | 'd4a1fa80-d9d8-450f-87c2-e1f6669c41f8'                 | exclude results by providing the similarity ID of a result                                                                                                  | String  | No       | N/A                                                    |
-| exclude_severities                        | 'info,low'                                             | exclude results by providing the severity of a result                                                                                                       | String  | No       | N/A                                                    |
-| exclude_gitignore (available only from KICS version 1.6)                        |                                                        | disables the exclusion of paths specified within .gitignore file                                                                                             | Boolean  | No       | false                                                    |
-| include_queries                           | a227ec01-f97a-4084-91a4-47b350c1db54                   | include only specified list of queries to the scan, cannot be provided with query exclusion flags                                                           | String  | No       | N/A                                                    |
-| output_formats                            | 'json,sarif'                                           | formats in which the results report will be exported                                                                                                        | String  | No       | json                                                   |
-| output_path                               | myResults/                                             | file path to store result in json format                                                                                                                    | String  | No       | "./"                                                   |
-| payload_path                              | /tmp/mypayload.json                                    | file path to store source internal representation in JSON format                                                                                            | String  | No       | N/A                                                    |
-| queries                                   |                                                        | path to directory with queries (default "./assets/queries")                                                                                                 | String  | No       | ./assets/queries downloaded with the binaries          |
-| verbose                                   | true                                                   | verbose scan                                                                                                                                                | Boolean | No       | false                                                  |
-| type                                      | Ansible,Dockerfile                                     | case insensitive comma-separated list of platform types to scan (Ansible, AzureResourceManager, CloudFormation, Dockerfile, Kubernetes, OpenAPI, Terraform) | String  | No       | all types                                              |
-| bom                                       | true                                                   | include bill of materials (BoM) in results.json output                                                                                                      | Boolean | No       | false                                                  |
-| disable_full_descriptions                 | false                                                  | disable request for full descriptions and use default vulnerability descriptions                                                                            | Boolean | false    |
-| disable_secrets                           | false                                                  | disable secrets detection                                                                                                                                   | Boolean | false    |
-| secrets_regexes_path                      | ./mydir/secrets-config.json                            | path to custom secrets regex rules configuration file                                                                                                       | String  | No       | N/A                                                    |
-| libraries_path                            | ./myLibsDir                                            | path to directory with Rego libraries                                                                                                                       | String  | No       | N/A                                                    |
-| cloud_provider                            | aws,azure                                            | list of cloud providers to scan (alicloud, aws, azure, gcp)                                                                                                                       | String  | No       | N/A                                                    |
-
+| Variable                                                 | Example Value &nbsp;                                  | Description &nbsp;                                                                                                                                          | Type    | Required | Default                                               |
+| -------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- | ----------------------------------------------------- |
+| enable_comments                                          | true                                                  | Enable pull request report comments                                                                                                                         | Boolean | No       | false                                                 |
+| enable_jobs_summary                                      | true                                                  | Enable report as jobs summary                                                                                                                               | Boolean | No       | false                                                 |
+| enable_annotations                                       | true                                                  | Enable annotations report                                                                                                                                   | Boolean | No       | true                                                  |
+| comments_with_queries                                    | true                                                  | Add queries in th pull request report comments (available when enable_comments = true)                                                                      | Boolean | No       | false                                                 |
+| excluded_column_for_comments_with_queries                | description_id,similarity_id,search_line,search_value | Excluded columns for the comment with queries, accepts a comma separated list                                                                               | String  | No       | description_id,similarity_id,search_line,search_value |
+| path                                                     | terraform/main.tf,Dockerfile                          | paths to a file or directories to scan, comma separated list                                                                                                | String  | Yes      | N/A                                                   |
+| ignore_on_exit                                           | results                                               | defines which non-zero exit codes should be ignored (all, results, errors, none)                                                                            | String  | No       | none                                                  |
+| fail_on                                                  | high,medium                                           | comma separated list of which severities returns exit code !=0                                                                                              | String  | No       | high,medium,low,info                                  |
+| timeout                                                  | 75                                                    | number of seconds the query has to execute before being canceled                                                                                            | String  | No       | 60                                                    |
+| profiling                                                | CPU                                                   | turns on profiler that prints resource consumption in the logs during the execution (CPU, MEM)                                                              | String  | No       | N/A                                                   |
+| config_path                                              | ./kics.config                                         | path to configuration file                                                                                                                                  | String  | No       | N/A                                                   |
+| platform_type                                            | terraform,ansible                                     | case insensitive list of platform types to scan                                                                                                             | String  | No       | All platforms                                         |
+| exclude_paths                                            | ./shouldNotScan/\*,somefile.txt                       | exclude paths from scan, supports glob, comma separated list                                                                                                | String  | No       | N/A                                                   |
+| exclude_queries                                          | a227ec01-f97a-4084-91a4-47b350c1db54                  | exclude queries by providing the query ID, comma separated list                                                                                             | String  | No       | N/A                                                   |
+| exclude_categories                                       | 'Observability,Networking and Firewall'               | exclude categories by providing its name, comma separated list                                                                                              | String  | No       | N/A                                                   |
+| exclude_results                                          | 'd4a1fa80-d9d8-450f-87c2-e1f6669c41f8'                | exclude results by providing the similarity ID of a result                                                                                                  | String  | No       | N/A                                                   |
+| exclude_severities                                       | 'info,low'                                            | exclude results by providing the severity of a result                                                                                                       | String  | No       | N/A                                                   |
+| exclude_gitignore (available only from KICS version 1.6) |                                                       | disables the exclusion of paths specified within .gitignore file                                                                                            | Boolean | No       | false                                                 |
+| include_queries                                          | a227ec01-f97a-4084-91a4-47b350c1db54                  | include only specified list of queries to the scan, cannot be provided with query exclusion flags                                                           | String  | No       | N/A                                                   |
+| output_formats                                           | 'json,sarif'                                          | formats in which the results report will be exported                                                                                                        | String  | No       | json                                                  |
+| output_path                                              | myResults/                                            | file path to store result in json format                                                                                                                    | String  | No       | "./"                                                  |
+| payload_path                                             | /tmp/mypayload.json                                   | file path to store source internal representation in JSON format                                                                                            | String  | No       | N/A                                                   |
+| queries                                                  |                                                       | path to directory with queries (default "./assets/queries")                                                                                                 | String  | No       | ./assets/queries downloaded with the binaries         |
+| verbose                                                  | true                                                  | verbose scan                                                                                                                                                | Boolean | No       | false                                                 |
+| type                                                     | Ansible,Dockerfile                                    | case insensitive comma-separated list of platform types to scan (Ansible, AzureResourceManager, CloudFormation, Dockerfile, Kubernetes, OpenAPI, Terraform) | String  | No       | all types                                             |
+| bom                                                      | true                                                  | include bill of materials (BoM) in results.json output                                                                                                      | Boolean | No       | false                                                 |
+| disable_full_descriptions                                | false                                                 | disable request for full descriptions and use default vulnerability descriptions                                                                            | Boolean | false    |
+| disable_secrets                                          | false                                                 | disable secrets detection                                                                                                                                   | Boolean | false    |
+| secrets_regexes_path                                     | ./mydir/secrets-config.json                           | path to custom secrets regex rules configuration file                                                                                                       | String  | No       | N/A                                                   |
+| libraries_path                                           | ./myLibsDir                                           | path to directory with Rego libraries                                                                                                                       | String  | No       | N/A                                                   |
+| cloud_provider                                           | aws,azure                                             | list of cloud providers to scan (alicloud, aws, azure, gcp)                                                                                                 | String  | No       | N/A                                                   |
 
 ## Simple usage example
 
 ```yaml
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v3
-    # Scan Iac with kics
-    - name: run kics Scan
-      uses: checkmarx/kics-github-action@v2.1.13
-      with:
-        # scanning two directories: ./terraform/ ./cfn-templates/ plus a single file
-        path: 'terraform,cfn-templates,my-other-sub-folder/Dockerfile'
-        output_path: myResults/
-    # Display the results in json format
-    - name: display kics results
-      run: |
-        cat myResults/results.json
+# Steps represent a sequence of tasks that will be executed as part of the job
+steps:
+  # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  - uses: actions/checkout@v3
+  # Scan Iac with kics
+  - name: run kics Scan
+    uses: checkmarx/kics-github-action@v2.1.13
+    with:
+      # scanning two directories: ./terraform/ ./cfn-templates/ plus a single file
+      path: "terraform,cfn-templates,my-other-sub-folder/Dockerfile"
+      output_path: myResults/
+  # Display the results in json format
+  - name: display kics results
+    run: |
+      cat myResults/results.json
 ```
 
 ## Workflow failures
@@ -141,17 +153,17 @@ By default KICS will fail your workflow on any results found.
 If you want KICS to ignore the results and return exit status code 0 unless a KICS engine error happens:
 
 ```yaml
-    steps:
-    - uses: actions/checkout@v3
-    - name: run kics Scan
-      uses: checkmarx/kics-github-action@v2.1.13
-      with:
-        path: 'terraform'
-        ignore_on_exit: results
-        output_path: myResults/
-    - name: display kics results
-      run: |
-        cat myResults/results.json
+steps:
+  - uses: actions/checkout@v3
+  - name: run kics Scan
+    uses: checkmarx/kics-github-action@v2.1.13
+    with:
+      path: "terraform"
+      ignore_on_exit: results
+      output_path: myResults/
+  - name: display kics results
+    run: |
+      cat myResults/results.json
 ```
 
 ### Fail by severity usage example
@@ -159,17 +171,17 @@ If you want KICS to ignore the results and return exit status code 0 unless a KI
 If want your pipeline just to fail on HIGH and MEDIUM severity results and KICS engine execution errors:
 
 ```yaml
-    steps:
-    - uses: actions/checkout@v3
-    - name: run kics Scan
-      uses: checkmarx/kics-github-action@v2.1.13
-      with:
-        path: 'terraform,my-other-sub-folder/Dockerfile'
-        fail_on: high,medium
-        output_path: myResults/
-    - name: display kics results
-      run: |
-        cat myResults/results.json
+steps:
+  - uses: actions/checkout@v3
+  - name: run kics Scan
+    uses: checkmarx/kics-github-action@v2.1.13
+    with:
+      path: "terraform,my-other-sub-folder/Dockerfile"
+      fail_on: high,medium
+      output_path: myResults/
+  - name: display kics results
+    run: |
+      cat myResults/results.json
 ```
 
 ## Enabling Pull Request Comment
@@ -186,19 +198,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: run kics Scan
-      uses: checkmarx/kics-github-action@v2.1.13
-      with:
-        path: test/samples/positive1.tf,test/samples/positive2.tf
-        token: ${{ secrets.GITHUB_TOKEN }}
-        output_path: myResults/
-        ignore_on_exit: results
-        enable_comments: true
+      - uses: actions/checkout@v3
+      - name: run kics Scan
+        uses: checkmarx/kics-github-action@v2.1.13
+        with:
+          path: test/samples/positive1.tf,test/samples/positive2.tf
+          token: ${{ secrets.GITHUB_TOKEN }}
+          output_path: myResults/
+          ignore_on_exit: results
+          enable_comments: true
 ```
 
 ### PR Comment Example
-
 
 <img alt="KICS Logo" src="https://user-images.githubusercontent.com/111127232/203838108-ad537fea-4573-495a-9619-18500ee81dd9.png">
 
@@ -230,7 +241,6 @@ jobs:
 
 </td></tr> </table>
 
-
 ## Annotations
 
 After scanning, [kics-github-action](https://github.com/Checkmarx/kics-github-action) will add the results as annotations in a pull request:
@@ -244,21 +254,20 @@ You can only enable one profiler at a time, CPU or MEM.
 > 📝 &nbsp; Please note that execution time may be impacted by enabling performance profiler due to sampling
 
 ```yaml
-    steps:
-      - uses: actions/checkout@v3
-      - name: run kics Scan
-        uses: checkmarx/kics-github-action@v2.1.13
-        with:
-          path: 'terraform'
-          profiling: MEM
-          output_path: myResults/
-      - name: display kics results
-        run: |
-          cat myResults/results.json
+steps:
+  - uses: actions/checkout@v3
+  - name: run kics Scan
+    uses: checkmarx/kics-github-action@v2.1.13
+    with:
+      path: "terraform"
+      profiling: MEM
+      output_path: myResults/
+  - name: display kics results
+    run: |
+      cat myResults/results.json
 ```
 
 ## Uploading SARIF report
-
 
 ```yaml
 name: scan with KICS and upload SARIF
@@ -280,7 +289,7 @@ jobs:
       - name: Run KICS Scan with SARIF result
         uses: checkmarx/kics-github-action@v2.1.13
         with:
-          path: 'terraform'
+          path: "terraform"
           # when provided with a directory on output_path
           # it will generate the specified reports file named 'results.{extension}'
           # in this example it will generate:
@@ -289,7 +298,7 @@ jobs:
           ignore_on_exit: results
           output_path: results-dir
           platform_type: terraform
-          output_formats: 'json,sarif'
+          output_formats: "json,sarif"
           exclude_paths: "terraform/gcp/big_data.tf,terraform/azure"
           # seek query id in it's metadata.json
           exclude_queries: 0437633b-daa6-4bbc-8526-c0d2443b946e
@@ -346,13 +355,14 @@ jobs:
       - name: Run KICS Scan using config
         uses: checkmarx/kics-github-action@v2.1.13
         with:
-          path: 'terraform'
+          path: "terraform"
           config_path: ./kics.config
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results-dir/results.sarif
 ```
+
 ## How To Contribute
 
 We welcome [issues](https://github.com/checkmarx/kics-github-action/issues) to and [pull requests](https://github.com/checkmarx/kics-github-action/pulls) against this repository!
