@@ -1,0 +1,9 @@
+---
+# Dockerfile builds a GitHub container action image, not a long-running service.
+skip-check:
+  # GitHub runs container actions as root so they can write to the mounted workspace.
+  - CKV_DOCKER_3
+  # Single-shot action container; a HEALTHCHECK has nothing to probe.
+  - CKV_DOCKER_2
+  # Chainguard's free wolfi-base tier only publishes :latest; the image is rebuilt per release.
+  - CKV_DOCKER_7
